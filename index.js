@@ -4,9 +4,10 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 
 const query = require("./github.query");
-const { calculateStats, calculateLanguages } = require("./stats.service");
+const { calculateStats, calculateLanguages, calculateConsistency } = require("./stats.service");
 const svgTemplate = require("./svg.template");
 const languageSvg = require("./svg.languages");
+const consistencySvg = require("./svg.consistency");
 
 const cache = new NodeCache({ stdTTL: 1800 });
 const app = express();
@@ -68,5 +69,33 @@ app.get("/api/languages/:username.svg", async (req, res) => {
     res.setHeader("Content-Type", "image/svg+xml");
     res.send(svg);
 });
+
+// Consistency Card Api
+app.get("/api/consistency/:username.svg", async (req, res) => {
+  const { username } = req.params;
+  const cacheKey = `consistency-${username}`;
+
+  if (cache.has(cacheKey)) {
+    res.setHeader("Content-Type", "image/svg+xml");
+    return res.send(cache.get(cacheKey));
+  }
+
+  const response = await axios.post(
+    "https://api.github.com/graphql",
+    { query, variables: { username } },
+    { headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } }
+  );
+
+  const calendar =
+    response.data.data.user.contributionsCollection.contributionCalendar;
+
+  const consistency = calculateConsistency(calendar);
+  const svg = consistencySvg(consistency, username);
+
+  cache.set(cacheKey, svg);
+  res.setHeader("Content-Type", "image/svg+xml");
+  res.send(svg);
+});
+
 
 app.listen(5000, () => console.log("Stats server running"));

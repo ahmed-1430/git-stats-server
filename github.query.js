@@ -5,6 +5,15 @@ query ($username: String!) {
       totalCommitContributions
       totalPullRequestContributions
       totalIssueContributions
+      contributionCalendar {
+        totalContributions
+        weeks {
+          contributionDays {
+            date
+            contributionCount
+          }
+        }
+      }
     }
 
     repositoriesContributedTo(first: 100) {
