@@ -131,7 +131,7 @@ module.exports = (trend, username) => {
     d="${linePath}"
     fill="none"
     stroke="#7CB8FF"
-    stroke-width="2.6"
+    stroke-width="2"
     stroke-linecap="round"
     stroke-linejoin="round"
     filter="url(#neonGlow)"
