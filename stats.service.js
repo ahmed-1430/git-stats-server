@@ -6,15 +6,19 @@ function calculateStats(data) {
         0
     );
 
+    const commits = user.contributionsCollection.totalCommitContributions;
+
     const grade =
-        user.contributionsCollection.totalCommitContributions > 800
-            ? "A"
-            : user.contributionsCollection.totalCommitContributions > 400
-                ? "B"
-                : "C";
+        commits >= 1200 ? "A+" :
+            commits >= 900 ? "A" :
+                commits >= 700 ? "B+" :
+                    commits >= 500 ? "B" :
+                        commits >= 300 ? "C+" :
+                            "C";
+
 
     return {
-        commits: user.contributionsCollection.totalCommitContributions,
+        commits,
         prs: user.contributionsCollection.totalPullRequestContributions,
         issues: user.contributionsCollection.totalIssueContributions,
         repos: user.repositoriesContributedTo.totalCount,
