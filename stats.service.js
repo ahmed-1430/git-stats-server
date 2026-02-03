@@ -78,8 +78,14 @@ function calculateConsistency(contributionCalendar) {
         }
     });
 
-    // Current streak (count backwards from today)
-    for (let i = days.length - 1; i >= 0; i--) {
+    // ---------- ✅ FIXED CURRENT STREAK ----------
+    let startIndex = days.length - 1;
+
+    if (days[startIndex].contributionCount === 0) {
+        startIndex = days.length - 2; // start from yesterday
+    }
+
+    for (let i = startIndex; i >= 0; i--) {
         if (days[i].contributionCount > 0) {
             currentStreak++;
         } else {
@@ -96,25 +102,25 @@ function calculateConsistency(contributionCalendar) {
 }
 
 function calculateContributionTrend(contributionCalendar) {
-  // Flatten days
-  const days = contributionCalendar.weeks.flatMap(
-    week => week.contributionDays
-  );
+    // Flatten days
+    const days = contributionCalendar.weeks.flatMap(
+        week => week.contributionDays
+    );
 
-  // Take last 30 days
-  const last30 = days.slice(-30);
+    // Take last 30 days
+    const last30 = days.slice(-30);
 
-  const values = last30.map(d => d.contributionCount);
+    const values = last30.map(d => d.contributionCount);
 
-  const max = Math.max(...values);
-  const avg =
-    values.reduce((a, b) => a + b, 0) / values.length;
+    const max = Math.max(...values);
+    const avg =
+        values.reduce((a, b) => a + b, 0) / values.length;
 
-  return {
-    values,
-    max,
-    avg: avg.toFixed(1)
-  };
+    return {
+        values,
+        max,
+        avg: avg.toFixed(1)
+    };
 }
 
 
