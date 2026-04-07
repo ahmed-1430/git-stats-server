@@ -1,26 +1,36 @@
 import { getStats } from "../services/stats.service.js";
-import { renderSVG } from "../renderers/svg/stats.renderer.js";
 
 export const statsController = async (req, res) => {
     try {
-        const username = req.query.user;
-        const type = req.query.type || "svg";
+        const { user, type } = req.query;
 
-        if (!username) {
-            return res.status(400).send("Username is required");
+        if (!user) {
+            return res.status(400).json({ error: "Username required" });
         }
 
-        const stats = await getStats(username);
+        const stats = await getStats(user);
 
-        if (type === "json") {
-            return res.json(stats);
+        // 🎯 Different endpoints
+        if (req.path.includes("languages")) {
+            return res.json(stats.languages);
         }
 
-        const svg = renderSVG(stats);
+        if (req.path.includes("activity")) {
+            return res.json({
+                contributions: stats.contributions,
+                commits: stats.commits,
+            });
+        }
 
-        res.setHeader("Content-Type", "image/svg+xml");
-        res.send(svg);
+        if (req.path.includes("consistency")) {
+            return res.json(stats.streak);
+        }
+
+        return res.json(stats);
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(500).json({
+            error: true,
+            message: err.message,
+        });
     }
 };
