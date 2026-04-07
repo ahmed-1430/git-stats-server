@@ -6,16 +6,8 @@ query($login: String!) {
   user(login: $login) {
     name
 
-    contributionsCollection {
-      contributionCalendar {
-        totalContributions
-        weeks {
-          contributionDays {
-            contributionCount
-            date
-          }
-        }
-      }
+    followers {
+      totalCount
     }
 
     repositories(first: 100, ownerAffiliations: OWNER) {
@@ -33,8 +25,22 @@ query($login: String!) {
       }
     }
 
-    followers {
-      totalCount
+    contributionsCollection {
+
+      totalCommitContributions
+      totalPullRequestContributions
+      totalIssueContributions
+      totalRepositoryContributions
+
+      contributionCalendar {
+        totalContributions
+        weeks {
+          contributionDays {
+            contributionCount
+            date
+          }
+        }
+      }
     }
   }
 }
@@ -67,9 +73,9 @@ export const getStats = async (username) => {
     const totalContributions =
         user.contributionsCollection.contributionCalendar.totalContributions;
 
-    
+
     //  STREAK CALCULATION (FIXED)
-    
+
     let longestStreak = 0;
     let tempStreak = 0;
 

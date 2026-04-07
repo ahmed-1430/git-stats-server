@@ -1,4 +1,4 @@
-/api/stats?user=ahmed
-/api/activity?user=ahmed
-/api/languages?user=ahmed
-/api/consistency?user=ahmed
+/api/stats?user=ahmed-1430
+/api/activity?user=ahmed-1430
+/api/languages?user=ahmed-1430
+/api/consistency?user=ahmed-1430
