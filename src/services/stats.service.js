@@ -21,11 +21,13 @@ query($login: String!) {
     repositories(first: 100, ownerAffiliations: OWNER) {
       totalCount
       nodes {
-        name
         stargazerCount
         languages(first: 5) {
-          nodes {
-            name
+          edges {
+            size
+            node {
+              name
+            }
           }
         }
       }
@@ -39,119 +41,129 @@ query($login: String!) {
 `;
 
 export const getStats = async (username) => {
-    const cached = getCache(username);
-    if (cached) return cached;
+  const cached = getCache(username);
+  if (cached) return cached;
 
-    const data = await fetchGitHubData(query, { login: username });
+  const data = await fetchGitHubData(query, { login: username });
 
-    if (!data || !data.user) {
-        throw new Error("User not found");
+  if (!data || !data.user) {
+    throw new Error("User not found");
+  }
+
+  const user = data.user;
+
+  // ========================
+  // 📊 CONTRIBUTIONS
+  // ========================
+  const weeks =
+    user.contributionsCollection.contributionCalendar.weeks;
+
+  const contributions = weeks.flatMap((week) =>
+    week.contributionDays.map((day) => ({
+      count: day.contributionCount,
+      date: day.date,
+    }))
+  );
+
+  const totalContributions =
+    user.contributionsCollection.contributionCalendar.totalContributions;
+
+  // ========================
+  // 🔥 STREAK CALCULATION (FIXED)
+  // ========================
+  let longestStreak = 0;
+  let tempStreak = 0;
+
+  contributions.forEach((day) => {
+    if (day.count > 0) {
+      tempStreak++;
+      longestStreak = Math.max(longestStreak, tempStreak);
+    } else {
+      tempStreak = 0;
+    }
+  });
+
+  // ✅ SMART CURRENT STREAK (ignore today if 0)
+  let currentStreak = 0;
+
+  for (let i = contributions.length - 1; i >= 0; i--) {
+    const day = contributions[i];
+
+    // Skip today if no commits
+    if (i === contributions.length - 1 && day.count === 0) {
+      continue;
     }
 
-    const user = data.user;
-
-    // ========================
-    // 📊 CONTRIBUTIONS
-    // ========================
-    const weeks =
-        user.contributionsCollection.contributionCalendar.weeks;
-
-    const contributions = weeks.flatMap((week) =>
-        week.contributionDays.map((day) => ({
-            count: day.contributionCount,
-            date: day.date,
-        }))
-    );
-
-    const totalContributions =
-        user.contributionsCollection.contributionCalendar.totalContributions;
-
-    // ========================
-    // 🔥 STREAK CALCULATION
-    // ========================
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
-
-    contributions.forEach((day) => {
-        if (day.count > 0) {
-            tempStreak++;
-            longestStreak = Math.max(longestStreak, tempStreak);
-        } else {
-            tempStreak = 0;
-        }
-    });
-
-    // current streak (reverse)
-    for (let i = contributions.length - 1; i >= 0; i--) {
-        if (contributions[i].count > 0) currentStreak++;
-        else break;
+    if (day.count > 0) {
+      currentStreak++;
+    } else {
+      break;
     }
+  }
 
-    // ========================
-    // 🌍 LANGUAGES + STARS
-    // ========================
-    let totalStars = 0;
-    let languageMap = {};
+  // ========================
+  // 🌍 LANGUAGES + STARS (FIXED)
+  // ========================
+  let totalStars = 0;
+  let languageMap = {};
 
-    user.repositories.nodes.forEach((repo) => {
-        totalStars += repo.stargazerCount;
+  user.repositories.nodes.forEach((repo) => {
+    totalStars += repo.stargazerCount || 0;
 
-        repo.languages.nodes.forEach((lang) => {
-            languageMap[lang.name] =
-                (languageMap[lang.name] || 0) + 1;
-        });
+    repo.languages.edges.forEach((lang) => {
+      const name = lang.node.name;
+      const size = lang.size;
+
+      languageMap[name] = (languageMap[name] || 0) + size;
     });
+  });
 
-    // Convert to percentage
-    const totalLangs = Object.values(languageMap).reduce(
-        (a, b) => a + b,
-        0
-    );
+  const totalLangSize =
+    Object.values(languageMap).reduce((a, b) => a + b, 0) || 1;
 
-    const languages = Object.entries(languageMap).map(
-        ([name, count]) => ({
-            name,
-            percent: ((count / totalLangs) * 100).toFixed(1),
-        })
-    );
+  const languages = Object.entries(languageMap)
+    .map(([name, size]) => ({
+      name,
+      percent: Number(((size / totalLangSize) * 100).toFixed(1)),
+    }))
+    .sort((a, b) => b.percent - a.percent);
 
-    // ========================
-    // 🎯 SCORE SYSTEM
-    // ========================
-    const scoreRaw =
-        totalContributions * 0.4 +
-        currentStreak * 2 +
-        totalStars * 3 +
-        user.repositories.totalCount * 2;
+  // ========================
+  // 🎯 SCORE SYSTEM (IMPROVED)
+  // ========================
+  const scoreRaw =
+    totalContributions * 0.3 +
+    currentStreak * 5 +
+    totalStars * 2 +
+    user.repositories.totalCount * 2;
 
-    const score = Math.min(100, Math.round(scoreRaw / 50));
+  const score = Math.min(100, Math.round(scoreRaw / 100));
 
-    let grade = "C";
-    if (score > 80) grade = "A";
-    else if (score > 60) grade = "B";
+  let grade = "C";
+  if (score >= 80) grade = "A";
+  else if (score >= 60) grade = "B";
 
-    // ========================
-    // 📦 FINAL RESPONSE
-    // ========================
-    const stats = {
-        name: user.name,
-        commits: totalContributions,
-        repos: user.repositories.totalCount,
-        followers: user.followers.totalCount,
-        stars: totalStars,
+  // ========================
+  // 📦 FINAL RESPONSE
+  // ========================
+  const stats = {
+    name: user.name,
+    commits: totalContributions,
+    repos: user.repositories.totalCount,
+    followers: user.followers.totalCount,
+    stars: totalStars,
 
-        streak: {
-            current: currentStreak,
-            longest: longestStreak,
-        },
+    streak: {
+      current: currentStreak,
+      longest: longestStreak,
+    },
 
-        languages,
-        contributions,
-        score,
-        grade,
-    };
+    languages,
+    contributions,
+    score,
+    grade,
+  };
 
-    setCache(username, stats);
-    return stats;
+  setCache(username, stats);
+  return stats;
 };
