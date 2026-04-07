@@ -147,16 +147,34 @@ export const getStats = async (username) => {
     let grade = "C";
     if (score >= 80) grade = "A";
     else if (score >= 60) grade = "B";
+    const collection = user.contributionsCollection;
 
+    const pullRequests = collection.totalPullRequestContributions;
+    const issues = collection.totalIssueContributions;
+    const reposContributed = collection.totalRepositoryContributions;
+    const commits = collection.totalCommitContributions;
+
+
+    const activeWeeks = weeks.filter((week) =>
+        week.contributionDays.some((day) => day.contributionCount > 0)
+    ).length;
 
     //  FINAL RESPONSE
 
     const stats = {
         name: user.name,
-        commits: totalContributions,
+
+        commits,
+        pullRequests,
+        issues,
+        reposContributed,
+
         repos: user.repositories.totalCount,
         followers: user.followers.totalCount,
         stars: totalStars,
+
+        totalContributions,
+        activeWeeks,
 
         streak: {
             current: currentStreak,
@@ -165,6 +183,7 @@ export const getStats = async (username) => {
 
         languages,
         contributions,
+
         score,
         grade,
     };
