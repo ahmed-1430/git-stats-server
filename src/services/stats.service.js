@@ -179,6 +179,30 @@ export const getStats = async (username) => {
     else status = "Learning";
 
 
+    let grade = "C";
+
+    //  Strong consistency → highest weight
+    if (currentStreak >= 90) grade = "A";
+    else if (currentStreak >= 30) grade = "B";
+
+    //  Boost if high contributions
+    if (totalContributions >= 1000 && grade !== "A") {
+        grade = "A";
+    } else if (totalContributions >= 400 && grade === "C") {
+        grade = "B";
+    }
+
+    //  Boost if contributing to others
+    if (reposContributed >= 10 && grade === "B") {
+        grade = "A";
+    }
+
+    //  Small downgrade if inactive
+    if (currentStreak === 0 && totalContributions < 100) {
+        grade = "C";
+    }
+
+
     // FINAL RESPONSE
 
 
@@ -205,9 +229,9 @@ export const getStats = async (username) => {
         languages,
         contributions,
 
-        status, //  NEW (REPLACE SCORE)
+        grade,
+        status
     };
-
     setCache(username, stats);
     return stats;
 };
