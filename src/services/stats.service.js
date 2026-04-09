@@ -10,6 +10,7 @@ query($login: String!) {
       totalCount
     }
 
+    # OWN REPOSITORIES
     repositories(first: 100, ownerAffiliations: OWNER) {
       totalCount
       nodes {
@@ -25,8 +26,22 @@ query($login: String!) {
       }
     }
 
-    contributionsCollection {
+    #  CONTRIBUTED REPOSITORIES (IMPORTANT)
+    repositoriesContributedTo(
+      first: 100
+      contributionTypes: [COMMIT, PULL_REQUEST, ISSUE]
+    ) {
+      totalCount
+      nodes {
+        name
+        owner {
+          login
+        }
+      }
+    }
 
+    # CONTRIBUTIONS
+    contributionsCollection {
       totalCommitContributions
       totalPullRequestContributions
       totalIssueContributions
@@ -57,11 +72,13 @@ export const getStats = async (username) => {
     }
 
     const user = data.user;
+    const collection = user.contributionsCollection;
 
-    // CONTRIBUTIONS
+    /* ========================
+        CONTRIBUTIONS
+    ======================== */
 
-    const weeks =
-        user.contributionsCollection.contributionCalendar.weeks;
+    const weeks = collection.contributionCalendar.weeks;
 
     const contributions = weeks.flatMap((week) =>
         week.contributionDays.map((day) => ({
@@ -71,10 +88,11 @@ export const getStats = async (username) => {
     );
 
     const totalContributions =
-        user.contributionsCollection.contributionCalendar.totalContributions;
+        collection.contributionCalendar.totalContributions;
 
 
-    //  STREAK CALCULATION (FIXED)
+    // STREAK
+
 
     let longestStreak = 0;
     let tempStreak = 0;
@@ -88,26 +106,28 @@ export const getStats = async (username) => {
         }
     });
 
-    //  SMART CURRENT STREAK (ignore today if 0)
     let currentStreak = 0;
 
     for (let i = contributions.length - 1; i >= 0; i--) {
         const day = contributions[i];
 
-        // Skip today if no commits
-        if (i === contributions.length - 1 && day.count === 0) {
-            continue;
-        }
+        if (i === contributions.length - 1 && day.count === 0) continue;
 
-        if (day.count > 0) {
-            currentStreak++;
-        } else {
-            break;
-        }
+        if (day.count > 0) currentStreak++;
+        else break;
     }
 
 
-    //  LANGUAGES + STARS (FIXED)
+    //     ACTIVE WEEKS
+
+
+    const activeWeeks = weeks.filter((week) =>
+        week.contributionDays.some((d) => d.contributionCount > 0)
+    ).length;
+
+
+    // LANGUAGES + STARS
+
 
     let totalStars = 0;
     let languageMap = {};
@@ -134,32 +154,33 @@ export const getStats = async (username) => {
         .sort((a, b) => b.percent - a.percent);
 
 
-    //  SCORE SYSTEM (IMPROVED)
+    //     ACTIVITY METRICS
 
-    const scoreRaw =
-        totalContributions * 0.3 +
-        currentStreak * 5 +
-        totalStars * 2 +
-        user.repositories.totalCount * 2;
-
-    const score = Math.min(100, Math.round(scoreRaw / 100));
-
-    let grade = "C";
-    if (score >= 80) grade = "A";
-    else if (score >= 60) grade = "B";
-    const collection = user.contributionsCollection;
-
+    const commits = collection.totalCommitContributions;
     const pullRequests = collection.totalPullRequestContributions;
     const issues = collection.totalIssueContributions;
-    const reposContributed = collection.totalRepositoryContributions;
-    const commits = collection.totalCommitContributions;
+    const contributedRepos =
+        user.repositoriesContributedTo.nodes;
 
-
-    const activeWeeks = weeks.filter((week) =>
-        week.contributionDays.some((day) => day.contributionCount > 0)
+    const reposContributed = contributedRepos.filter(
+        (repo) => repo.owner.login !== username
     ).length;
 
-    //  FINAL RESPONSE
+
+    // ACTIVITY STATUS (NEW)
+
+
+    let status = "Inactive";
+
+    if (currentStreak >= 90) status = "Elite";
+    else if (currentStreak >= 30) status = "Highly Active";
+    else if (currentStreak >= 7) status = "Active";
+    else if (totalContributions > 200) status = "Consistent";
+    else status = "Learning";
+
+
+    // FINAL RESPONSE
+
 
     const stats = {
         name: user.name,
@@ -184,8 +205,7 @@ export const getStats = async (username) => {
         languages,
         contributions,
 
-        score,
-        grade,
+        status, //  NEW (REPLACE SCORE)
     };
 
     setCache(username, stats);
