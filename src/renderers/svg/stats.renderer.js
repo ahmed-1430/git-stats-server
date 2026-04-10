@@ -74,7 +74,7 @@ export const renderSVG = (stats) => {
 `;
 };
 
-// 🔥 Card component
+// Card component
 const card = (x, y, title, value) => `
   <g>
     <rect x="${x}" y="${y}" width="180" height="60" rx="12" fill="#0b1220" />

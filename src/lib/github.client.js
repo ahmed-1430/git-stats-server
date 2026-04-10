@@ -10,7 +10,7 @@ export const fetchGitHubData = async (query, variables) => {
 
     const json = await res.json();
 
-    console.log("GitHub API Response:", JSON.stringify(json, null, 2)); // 👈 ADD THIS
+    // console.log("GitHub API Response:", JSON.stringify(json, null, 2)); //  ADD THIS
 
     if (json.errors) {
         throw new Error(json.errors[0].message);

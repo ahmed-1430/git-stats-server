@@ -10,7 +10,7 @@ export const statsController = async (req, res) => {
 
         const stats = await getStats(user);
 
-        // 🎯 Different endpoints
+        // Different endpoints
         if (req.path.includes("languages")) {
             return res.json(stats.languages);
         }

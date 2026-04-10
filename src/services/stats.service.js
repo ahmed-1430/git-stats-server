@@ -74,10 +74,8 @@ export const getStats = async (username) => {
     const user = data.user;
     const collection = user.contributionsCollection;
 
-    /* ========================
-        CONTRIBUTIONS
-    ======================== */
-
+    
+        // CONTRIBUTIONS
     const weeks = collection.contributionCalendar.weeks;
 
     const contributions = weeks.flatMap((week) =>
@@ -120,15 +118,12 @@ export const getStats = async (username) => {
 
     //     ACTIVE WEEKS
 
-
     const activeWeeks = weeks.filter((week) =>
         week.contributionDays.some((d) => d.contributionCount > 0)
     ).length;
 
 
     // LANGUAGES + STARS
-
-
     let totalStars = 0;
     let languageMap = {};
 
@@ -155,7 +150,6 @@ export const getStats = async (username) => {
 
 
     //     ACTIVITY METRICS
-
     const commits = collection.totalCommitContributions;
     const pullRequests = collection.totalPullRequestContributions;
     const issues = collection.totalIssueContributions;
@@ -168,8 +162,6 @@ export const getStats = async (username) => {
 
 
     // ACTIVITY STATUS (NEW)
-
-
     let status = "Inactive";
 
     if (currentStreak >= 90) status = "Elite";
