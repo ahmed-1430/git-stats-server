@@ -10,6 +10,7 @@ app.use(cors());
 
 app.use("/api", statsRoutes);
 
-app.listen(config.port, () => {
-  console.log(`Server running on port ${config.port}`);
-});
+// app.listen(config.port, () => {
+//   console.log(`Server running on port ${config.port}`);
+// });
+export default app;

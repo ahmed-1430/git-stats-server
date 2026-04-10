@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Git Stats Server</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08111f;
+        --panel: rgba(11, 26, 44, 0.88);
+        --line: rgba(148, 163, 184, 0.22);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 30%),
+          radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.14), transparent 35%),
+          linear-gradient(180deg, #020617 0%, #0f172a 100%);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      main {
+        width: min(760px, 100%);
+        padding: 32px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 20px 60px rgba(2, 6, 23, 0.45);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        line-height: 1.05;
+      }
+
+      p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        margin-top: 26px;
+      }
+
+      .card {
+        padding: 16px 18px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: rgba(15, 23, 42, 0.65);
+      }
+
+      .label {
+        display: inline-block;
+        margin-bottom: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 0.86rem;
+        font-weight: 600;
+      }
+
+      code {
+        color: #bae6fd;
+        word-break: break-word;
+      }
+
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="label">Vercel deployment ready</span>
+      <h1>Git Stats Server</h1>
+      <p>
+        This project exposes GitHub statistics APIs. Use one of the endpoints below
+        with a <code>user</code> query parameter.
+      </p>
+
+      <div class="grid">
+        <section class="card">
+          <strong>Stats</strong>
+          <p><code>/api/stats?user=ahmed-1430</code></p>
+        </section>
+
+        <section class="card">
+          <strong>Activity</strong>
+          <p><code>/api/activity?user=ahmed-1430</code></p>
+        </section>
+
+        <section class="card">
+          <strong>Languages</strong>
+          <p><code>/api/languages?user=ahmed-1430</code></p>
+        </section>
+
+        <section class="card">
+          <strong>Consistency</strong>
+          <p><code>/api/consistency?user=ahmed-1430</code></p>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
