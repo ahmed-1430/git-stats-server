@@ -1,20 +1,36 @@
-export const fetchGitHubData = async (query, variables) => {
-    const res = await fetch("https://api.github.com/graphql", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query, variables }),
-    });
+import { config } from "../config/env.js";
+import { AppError } from "./app-error.js";
 
-    const json = await res.json();
+const GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
 
-    // console.log("GitHub API Response:", JSON.stringify(json, null, 2)); //  ADD THIS
+export const fetchGitHubData = async (query, variables = {}) => {
+  const response = await fetch(GITHUB_GRAPHQL_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.githubToken}`,
+      "Content-Type": "application/json",
+      Accept: "application/vnd.github+json",
+      "User-Agent": "DevInsight",
+    },
+    body: JSON.stringify({ query, variables }),
+  });
 
-    if (json.errors) {
-        throw new Error(json.errors[0].message);
-    }
+  const payload = await response.json();
 
-    return json.data;
+  if (!response.ok) {
+    throw new AppError(
+      "GitHub API request failed",
+      response.status,
+      payload,
+    );
+  }
+
+  if (payload.errors?.length) {
+    const [firstError] = payload.errors;
+    const statusCode = firstError.type === "NOT_FOUND" ? 404 : 502;
+
+    throw new AppError(firstError.message, statusCode, payload.errors);
+  }
+
+  return payload.data;
 };

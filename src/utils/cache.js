@@ -1,20 +1,19 @@
-const cache = new Map();
+import NodeCache from "node-cache";
 
-export const getCache = (key) => {
-    const item = cache.get(key);
-    if (!item) return null;
+import { config } from "../config/env.js";
 
-    if (Date.now() > item.expiry) {
-        cache.delete(key);
-        return null;
-    }
+const cache = new NodeCache({
+  stdTTL: config.cacheTtlSeconds,
+  checkperiod: Math.max(60, Math.floor(config.cacheTtlSeconds / 2)),
+  useClones: false,
+});
 
-    return item.data;
+export const getCache = (key) => cache.get(key) ?? null;
+
+export const setCache = (key, value, ttl = config.cacheTtlSeconds) => {
+  cache.set(key, value, ttl);
 };
 
-export const setCache = (key, data, ttl = 300000) => {
-    cache.set(key, {
-        data,
-        expiry: Date.now() + ttl,
-    });
+export const deleteCache = (key) => {
+  cache.del(key);
 };
