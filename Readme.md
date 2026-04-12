@@ -6,27 +6,27 @@ This backend processes raw GitHub data into meaningful insights such as streaks,
 
 ---
 
-## 🚀 Live API
+##  Live API
 
 👉 https://your-api.vercel.app/api/stats?user=ahmed-1430
 
 ---
 
-## ✨ Features
+##  Features
 
-- 📊 GitHub GraphQL integration
-- 🔥 Streak calculation (current & longest)
-- 📈 Contribution analysis (daily + yearly)
-- 🌍 Language breakdown (percentage-based)
-- ⭐ Total stars aggregation
-- 🤝 External repository contributions tracking
-- 🧠 Activity status detection (Elite, Active, etc.)
-- 🏷 Grade system (A / B / C)
-- ⚡ Caching system (NodeCache)
+-  GitHub GraphQL integration
+-  Streak calculation (current & longest)
+-  Contribution analysis (daily + yearly)
+-  Language breakdown (percentage-based)
+-  Total stars aggregation
+-  External repository contributions tracking
+-  Activity status detection (Elite, Active, etc.)
+-  Grade system (A / B / C)
+-  Caching system (NodeCache)
 
 ---
 
-## 🧠 Tech Stack
+##  Tech Stack
 
 - **Node.js**
 - **Express.js**
@@ -36,7 +36,7 @@ This backend processes raw GitHub data into meaningful insights such as streaks,
 
 ---
 
-## 📡 API Endpoints
+##  API Endpoints
 
 
 - `/api/stats?user=ahmed-1430`
